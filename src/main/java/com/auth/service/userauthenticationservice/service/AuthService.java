@@ -2,9 +2,15 @@ package com.auth.service.userauthenticationservice.service;
 
 import com.auth.service.userauthenticationservice.models.User;
 import com.auth.service.userauthenticationservice.repos.UserRepo;
+import io.jsonwebtoken.Jwts;
+import org.antlr.v4.runtime.misc.Pair;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Service
@@ -33,7 +39,7 @@ public class AuthService implements IAuthService {
     }
 
     @Override
-    public User login(String email, String password) {
+    public Pair<User, MultiValueMap<String,String>> login(String email, String password) {
 
         Optional<User> userByEmail = userRepo.findUserByEmail(email);
         if(userByEmail.isPresent()) {
@@ -43,7 +49,28 @@ public class AuthService implements IAuthService {
             if(!bCryptPasswordEncoder.matches(password, user.getPassword())){
                 throw  new RuntimeException("Wrong password");
             }
-            return user;
+
+            // Hard coded Payload
+            String message = "{\n" +
+                "   \"email\": \"zahid@gmail.com\",\n" +
+                "   \"roles\": [\n" +
+                "      \"instructor\",\n" +
+                "      \"buddy\"\n" +
+                "   ],\n" +
+                "   \"expirationDate\": \"25thSept2024\"\n" +
+                "}";
+
+            // Token generation
+            byte[] contents = message.getBytes(StandardCharsets.UTF_8);
+            String token = Jwts.builder().content(contents).compact();
+
+            // set the token to the header
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add(HttpHeaders.SET_COOKIE, token);
+
+            // make pair
+            Pair<User, MultiValueMap<String,String>> p = new Pair<>(user, headers);
+            return p;
         }
 
         return null;

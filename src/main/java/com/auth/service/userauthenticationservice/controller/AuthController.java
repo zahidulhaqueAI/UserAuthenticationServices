@@ -6,8 +6,10 @@ import com.auth.service.userauthenticationservice.dto.SignupRequestDto;
 import com.auth.service.userauthenticationservice.dto.UserDto;
 import com.auth.service.userauthenticationservice.models.User;
 import com.auth.service.userauthenticationservice.service.IAuthService;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,8 +45,8 @@ public class AuthController {
 
         try {
 
-            User loginUser = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-            return new ResponseEntity<>(from(loginUser), HttpStatus.OK);
+            Pair<User, MultiValueMap<String,String>> loginUser = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+            return new ResponseEntity<>(from(loginUser.a), loginUser.b, HttpStatus.OK);
         } catch (RuntimeException ex) {
             throw new RuntimeException(ex.getMessage());
         }
