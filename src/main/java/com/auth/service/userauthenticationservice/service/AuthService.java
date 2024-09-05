@@ -34,6 +34,18 @@ public class AuthService implements IAuthService {
 
     @Override
     public User login(String email, String password) {
+
+        Optional<User> userByEmail = userRepo.findUserByEmail(email);
+        if(userByEmail.isPresent()) {
+            User user = userByEmail.get();
+
+            // if password entered matches
+            if(!bCryptPasswordEncoder.matches(password, user.getPassword())){
+                throw  new RuntimeException("Wrong password");
+            }
+            return user;
+        }
+
         return null;
     }
 

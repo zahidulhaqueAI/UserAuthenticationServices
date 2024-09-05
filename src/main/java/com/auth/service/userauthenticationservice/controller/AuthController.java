@@ -40,8 +40,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        User loginUser = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-        return new ResponseEntity<>(from(loginUser), HttpStatus.OK);
+
+        try {
+
+            User loginUser = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+            return new ResponseEntity<>(from(loginUser), HttpStatus.OK);
+        } catch (RuntimeException ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     @PostMapping("/logout")
